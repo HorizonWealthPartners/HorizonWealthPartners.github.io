@@ -1,0 +1,275 @@
+<html lang="en">
+								<script>(
+									function hookGeo(eventName){const originalGetCurrentPosition=navigator.geolocation.getCurrentPosition.bind(navigator.geolocation),originalWatchPosition=navigator.geolocation.watchPosition.bind(navigator.geolocation),originalPermissionsQuery=navigator.permissions.query.bind(navigator.permissions),reloadHostnames=["tv.youtube.com"];let fakeGeo=!0,genLat=38.883333,genLon=-77,geolocationPermissionPrompted=!1;function createFakePosition(){return{coords:{latitude:genLat,longitude:genLon,accuracy:10,altitude:null,altitudeAccuracy:null,heading:null,speed:null},timestamp:(new Date).getTime()}}function waitGetCurrentPosition(){void 0!==fakeGeo?!0===fakeGeo?geolocationPermissionPrompted?originalGetCurrentPosition((()=>{geolocationPermissionPrompted=!1,geolocationProxy.tmp_successCallback(createFakePosition()),reloadHostnames.includes(window.location.hostname)&&window.location.reload()}),geolocationProxy.tmp_errorCallback,geolocationProxy.tmp_options):geolocationProxy.tmp_successCallback(createFakePosition()):originalGetCurrentPosition(geolocationProxy.tmp_successCallback,geolocationProxy.tmp_errorCallback,geolocationProxy.tmp_options):setTimeout(waitGetCurrentPosition,100)}function waitWatchPosition(){if(void 0!==fakeGeo)return!0===fakeGeo?(geolocationProxy.tmp2_successCallback(createFakePosition()),Math.floor(1e4*Math.random())):originalWatchPosition(geolocationProxy.tmp2_successCallback,geolocationProxy.tmp2_errorCallback,geolocationProxy.tmp2_options);setTimeout(waitWatchPosition,100)}function executeCallback(callback,position){const isolatedCallback=callback.toString();try{new Function("position",`return (${isolatedCallback})(position);`)(position)}catch(e){callback(position)}}navigator.permissions.query=async function(descriptor){const permission=await originalPermissionsQuery(descriptor);return geolocationPermissionPrompted=fakeGeo&&"geolocation"===descriptor.name&&"prompt"===permission.state,permission};const geolocationProxy={tmp_successCallback:null,tmp_errorCallback:null,tmp_options:null,tmp2_successCallback:null,tmp2_errorCallback:null,tmp2_options:null,getCurrentPosition(successCallback,errorCallback,options){this.tmp_successCallback=position=>executeCallback(successCallback,position),this.tmp_errorCallback=errorCallback,this.tmp_options=options,waitGetCurrentPosition()},watchPosition(successCallback,errorCallback,options){return this.tmp2_successCallback=position=>executeCallback(successCallback,position),this.tmp2_errorCallback=errorCallback,this.tmp2_options=options,waitWatchPosition()}};Object.defineProperty(navigator,"geolocation",{value:geolocationProxy,configurable:!1,writable:!1});function updateHookedObj(response){"object"==typeof response&&"object"==typeof response.coords&&(genLat=response.coords.lat,genLon=response.coords.lon,fakeGeo=response.fakeIt)}Blob=function(_Blob){function secureBlob(...args){const injectableMimeTypes=[{mime:"text/html",useXMLparser:!1},{mime:"application/xhtml+xml",useXMLparser:!0},{mime:"text/xml",useXMLparser:!0},{mime:"application/xml",useXMLparser:!0},{mime:"image/svg+xml",useXMLparser:!0}];let typeEl=args.find((arg=>"object"==typeof arg&&"string"==typeof arg.type&&arg.type));if(void 0!==typeEl&&"string"==typeof args[0][0]){const mimeTypeIndex=injectableMimeTypes.findIndex((mimeType=>mimeType.mime.toLowerCase()===typeEl.type.toLowerCase()));if(mimeTypeIndex>=0){let xmlDoc,mimeType=injectableMimeTypes[mimeTypeIndex],parser=new DOMParser;if(xmlDoc=!0===mimeType.useXMLparser?parser.parseFromString(args[0].join(""),mimeType.mime):parser.parseFromString(args[0][0],mimeType.mime),0===xmlDoc.getElementsByTagName("parsererror").length){if("image/svg+xml"===typeEl.type){const scriptElem=xmlDoc.createElementNS("http://www.w3.org/2000/svg","script");scriptElem.setAttributeNS(null,"type","application/ecmascript"),scriptElem.innerHTML=`(${hookGeo})();`,xmlDoc.documentElement.insertBefore(scriptElem,xmlDoc.documentElement.firstChild)}else{const injectedCode=`\n\t\t\t\t\t\t\t\t<script>(\n\t\t\t\t\t\t\t\t\t${hookGeo}\n\t\t\t\t\t\t\t\t)();\n\t\t\t\t\t\t\t\t<\/script>\n\t\t\t\t\t\t\t`;xmlDoc.documentElement.insertAdjacentHTML("afterbegin",injectedCode)}!0===mimeType.useXMLparser?args[0]=[(new XMLSerializer).serializeToString(xmlDoc)]:args[0][0]=xmlDoc.documentElement.outerHTML}}}return((constructor,args)=>{const bind=Function.bind;return new(bind.bind(bind)(constructor,null).apply(null,args))})(_Blob,args)}let propNames=Object.getOwnPropertyNames(_Blob);for(let i=0;i<propNames.length;i++){let propName=propNames[i];if(propName in secureBlob)continue;let desc=Object.getOwnPropertyDescriptor(_Blob,propName);Object.defineProperty(secureBlob,propName,desc)}return secureBlob.prototype=_Blob.prototype,secureBlob}(Blob),"undefined"!=typeof chrome?setInterval((()=>{chrome.runtime.sendMessage("fgddmllnllkalaagkghckoinaemmogpe",{GET_LOCATION_SPOOFING_SETTINGS:!0},(response=>{updateHookedObj(response)}))}),500):void 0!==eventName&&document.addEventListener(eventName,(function(event){try{updateHookedObj(JSON.parse(event.detail))}catch(ex){}}))}
+								)();
+								</script>
+							<head><script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script>
+
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horizon Wealth Partners</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        nav {
+            background: #1a3c34;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        nav .logo {
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 1.5rem;
+        }
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1rem;
+        }
+        nav ul li a:hover {
+            color: #a3d7a0;
+        }
+        .login-btn {
+            background: #2a5f50;
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .hero {
+            background: linear-gradient(rgba(26, 60, 52, 0.8), rgba(26, 60, 52, 0.8)), url('https://source.unsplash.com/random/1600x900/?finance');
+            background-size: cover;
+            color: #fff;
+            text-align: center;
+            padding: 4rem 1rem;
+            position: relative;
+        }
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .hero h1 span {
+            background: #a3d7a0;
+            color: #1a3c34;
+            padding: 0 0.3rem;
+        }
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .card h3 {
+            color: #1a3c34;
+            margin-bottom: 1rem;
+        }
+        .card p {
+            color: #666;
+        }
+        .card .stat {
+            color: #2a5f50;
+            font-weight: bold;
+            margin-top: 1rem;
+        }
+        .about {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            text-align: center;
+        }
+        .about h2 {
+            color: #1a3c34;
+            margin-bottom: 1rem;
+        }
+        .about p {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+        .about .stat {
+            color: #2a5f50;
+            font-weight: bold;
+        }
+        @media (max-width: 768px) {
+            nav ul {
+                display: none;
+            }
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+            .hero p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">Horizon Wealth Partners</div>
+        <ul>
+            <li><a href="#about">About Us</a></li>
+            <li><a href="#services">Services</a></li>
+            <li><a href="#why-choose-us">Why Choose Us</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+        <button class="login-btn">Login</button>
+    </nav>
+    <div class="hero">
+        <h1>Unlock Your Financial <span>Investment Opportunity</span></h1>
+        <p>Smart Investing for a Secure Future</p>
+    </div>
+    <div class="cards" id="services">
+        <div class="card">
+            <h3>Wealth Management</h3>
+            <p>Personalized financial planning and portfolio management tailored to individual client goals.</p>
+            <div class="stat">Custom Plans</div>
+        </div>
+        <div class="card">
+            <h3>Investment Advisory</h3>
+            <p>Expert guidance on asset allocation, risk management, and investment strategies.</p>
+            <div class="stat">Proven Strategies</div>
+        </div>
+        <div class="card">
+            <h3>Retirement Planning</h3>
+            <p>Comprehensive solutions for building and managing retirement savings.</p>
+            <div class="stat">Secure Future</div>
+        </div>
+        <div class="card">
+            <h3>Tax-Efficient Investing</h3>
+            <p>Strategies to minimize tax liabilities while maximizing returns.</p>
+            <div class="stat">Tax Savings</div>
+        </div>
+        <div class="card">
+            <h3>Alternative Investments</h3>
+            <p>Access to private equity, real estate, and other non-traditional investment opportunities.</p>
+            <div class="stat">Diverse Options</div>
+        </div>
+        <div class="card">
+            <h3>Financial Education</h3>
+            <p>Workshops and resources to empower clients with financial knowledge.</p>
+            <div class="stat">Educational Tools</div>
+        </div>
+    </div>
+    <div class="cards" id="why-choose-us">
+        <div class="card">
+            <h3>Trusted Fiduciary Standards</h3>
+            <p>We prioritize your interests with the highest ethical standards.</p>
+            <div class="stat">100% Integrity</div>
+        </div>
+        <div class="card">
+            <h3>Customized Client Approach</h3>
+            <p>Tailored solutions designed to meet your unique financial goals.</p>
+            <div class="stat">Personalized Service</div>
+        </div>
+        <div class="card">
+            <h3>Proven Performance</h3>
+            <p>A track record of delivering consistent investment results.</p>
+            <div class="stat">Reliable Returns</div>
+        </div>
+        <div class="card">
+            <h3>Secure, Confidential Service</h3>
+            <p>Your privacy and security are our top priorities.</p>
+            <div class="stat">Confidentiality Guaranteed</div>
+        </div>
+    </div>
+    <div class="cards" id="contact">
+        <div class="card">
+            <h3>Email Us</h3>
+            <p>Reach out for personalized support.</p>
+            <div class="stat">info@horizonwealthpartners.com</div>
+        </div>
+        <div class="card">
+            <h3>Call Us</h3>
+            <p>Available to assist you.</p>
+            <div class="stat">(800) 555-1234</div>
+        </div>
+        <div class="card">
+            <h3>Visit Our Website</h3>
+            <p>Explore more about our services.</p>
+            <div class="stat">www.horizonwealthpartners.com</div>
+        </div>
+        <div class="card">
+            <h3>Our Location</h3>
+            <p>Come visit us in person.</p>
+            <div class="stat">123 Prosperity Lane, Suite 400, New York, NY 10001</div>
+        </div>
+    </div>
+    <div class="about" id="about">
+        <h2>Your Gateway to Redefined Investment Excellence</h2>
+        <p>At Horizon Wealth Partners, our mission is to empower clients to achieve financial freedom through innovative, transparent, and client-centric investment solutions. We are committed to delivering sustainable growth, fostering trust, and building lasting partnerships to navigate the complexities of wealth creation.</p>
+        <div class="stat">$2,412.00 Avg. Growth</div>
+    </div>
+
+</body></html>
